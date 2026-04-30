@@ -1,4 +1,4 @@
-from ABC import ABC, abstractmethod
+from abc import ABC, abstractmethod
 from typing import Optional
 from app.business.entities.document import Document 
 
