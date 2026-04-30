@@ -5,6 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "beanie>=2.1.0",
+    "motor>=3.7.1",
     "pdfplumber>=0.11.9",
     "pymupdf>=1.27.2.2",
     "pypdf>=6.9.2",
