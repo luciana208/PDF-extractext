@@ -78,7 +78,7 @@ class DocumentDTO:
 
         return Document(
             id=self.id,
-            name=self.name,
+            filename =self.name,
             checksum=self.checksum,
             extracted_text=self.extracted_text,
             created_at=self.created_at,
