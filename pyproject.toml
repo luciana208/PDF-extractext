@@ -10,3 +10,8 @@ dependencies = [
     "pypdf>=6.9.2",
     "pytesseract>=0.3.13",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
