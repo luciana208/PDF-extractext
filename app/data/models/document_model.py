@@ -21,7 +21,7 @@ las capas superiores trabajan con la entidad Document (capa de Negocio).
  
 from datetime import datetime, timezone
  
-from beanie import Document as BeanieDocument  # BeanieDocument maneja _id y la colección
+from beanie import Document
 from pydantic import Field
  
 # Importamos la entidad de dominio para la conversión. Usamos TYPE_CHECKING
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from app.business.entities.document import Document
  
  
-class DocumentModel(BeanieDocument):
+class DocumentModel(Document):
     """
     Representa un documento PDF guardado en MongoDB.
  
@@ -49,14 +49,15 @@ class DocumentModel(BeanieDocument):
  
     name: str
     checksum: str
-    extracted_text: str = Field(default="")
+    extracted_text: str = ""
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
  
     class Settings:
         # Nombre de la colección en MongoDB
         name = "documents"
- 
+        # Esto evita que Beanie intente validar la colección al instanciar el objeto en tests
+        is_root = True
     # ------------------------------------------------------------------
     # Conversión Model ↔ Entity  (DRY: un único punto de transformación)
     # ------------------------------------------------------------------
@@ -69,8 +70,8 @@ class DocumentModel(BeanieDocument):
         from app.business.entities.document import Document
  
         return Document(
-            id=str(self.id),
-            name=self.name,
+            id=str(self.id) if self.id else None,
+            filename=self.name,
             checksum=self.checksum,
             extracted_text=self.extracted_text,
             created_at=self.created_at,
@@ -84,7 +85,7 @@ class DocumentModel(BeanieDocument):
         Se usa en save() y update() del repositorio.
         """
         return cls(
-            name=entity.name,
+            name=entity.filename,
             checksum=entity.checksum,
             extracted_text=entity.extracted_text,
             created_at=entity.created_at,
