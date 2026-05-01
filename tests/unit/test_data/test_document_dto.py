@@ -20,7 +20,7 @@ def make_mock_entity(**kwargs):
     """Helper: crea una entidad mockeada con valores por defecto"""
     defaults = dict(
         id="64a1b2c3d4e5f6a7b8c9d0e1",
-        name="documento.pdf",
+        filename="documento.pdf",
         checksum="sha256abc",
         extracted_text="Contenido extraído",
         created_at=NOW,
@@ -118,6 +118,6 @@ class TestDocumentDTO:
         # to_entity() devuelve una entidad real de dominio
         entity_reconstruida = dto.to_entity()
  
-        assert entity_reconstruida.name == entity_original.name
+        assert entity_reconstruida.filename == entity_original.filename
         assert entity_reconstruida.checksum == entity_original.checksum
         assert entity_reconstruida.extracted_text == entity_original.extracted_text

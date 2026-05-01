@@ -62,7 +62,7 @@ class DocumentDTO:
         """
         return cls(
             id=entity.id,
-            name=entity.name,
+            name=entity.filename,
             checksum=entity.checksum,
             extracted_text=entity.extracted_text,
             created_at=entity.created_at,

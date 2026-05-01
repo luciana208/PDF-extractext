@@ -19,7 +19,7 @@ import logging
 import motor.motor_asyncio
 from pymongo.errors import ConnectionFailure, ConfigurationError
  
-from app.config import settings  # Lee MONGO_URL, DB_NAME desde .env
+from app.config.settings import settings # Lee MONGO_URL, DB_NAME desde .env
  
 # Logger propio del módulo (KISS: no configuramos nada extra aquí)
 logger = logging.getLogger(__name__)

@@ -23,7 +23,7 @@ from datetime import datetime, timezone
  
 from beanie import Document
 from pydantic import Field
- 
+from pymongo import IndexModel
 # Importamos la entidad de dominio para la conversión. Usamos TYPE_CHECKING
 # para evitar importación circular en tiempo de ejecución.
 from typing import TYPE_CHECKING
@@ -58,6 +58,9 @@ class DocumentModel(Document):
         name = "documents"
         # Esto evita que Beanie intente validar la colección al instanciar el objeto en tests
         is_root = True
+        indexes = [                                        # ← agregar esto
+            IndexModel([("checksum", 1)], unique=True),   # ← y esto
+        ]
     # ------------------------------------------------------------------
     # Conversión Model ↔ Entity  (DRY: un único punto de transformación)
     # ------------------------------------------------------------------
