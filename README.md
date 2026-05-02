@@ -193,6 +193,13 @@ uv run fastapi dev app/main.py
 
 Abrí en el navegador: [http://localhost:8000/docs](http://localhost:8000/docs)
 
+**Como acceder el frontend:
+
+Abrir una segunda terminal y ejecutar:
+cd frontend
+python3 -m http.server 5500
+
+Luego abrí en el navegador: [http://localhost:5500] (http://localhost:5500)
 ---
 
 ## 🧪 Testing

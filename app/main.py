@@ -4,8 +4,18 @@ from beanie import init_beanie
 from app.data.database.mongo_connection import connect, disconnect, get_database
 from app.data.models.document_model import DocumentModel
 from app.presentation.routers.document_router import router as document_router
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 
 # Registrar el router de documentos
 app.include_router(document_router)

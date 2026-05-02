@@ -1,0 +1,60 @@
+body {
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: system-ui, Arial, sans-serif;
+}
+
+h1, h2, h3 {
+  color: #f8fafc;
+}
+
+a {
+  text-decoration: none;
+}
+
+.card-custom {
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  border: none;
+}
+
+.btn-success {
+  background-color: #22c55e;
+  border: none;
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  border: none;
+}
+
+.btn {
+  border-radius: 8px;
+}
+
+.table {
+  color: #e2e8f0;
+}
+
+.table thead {
+  background: #334155;
+}
+
+input, textarea {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border: 1px solid #334155 !important;
+}
+
+pre {
+  background: #0b1220;
+  padding: 15px;
+  border-radius: 10px;
+  color: #cbd5e1;
+}
