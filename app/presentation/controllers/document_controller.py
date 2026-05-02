@@ -18,7 +18,7 @@ class DocumentController:
         file_bytes = await file.read()
         filename = dto.custom_name or file.filename
         try:
-            document = await self._service.process_pdf(file_bytes, filename)  # ← era process_document
+            document = await self._service.process_pdf(file_bytes, filename)
         except DuplicateDocumentError as e:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
         return DocumentResponseDTO.from_entity(document)
