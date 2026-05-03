@@ -117,34 +117,33 @@ class MongoDocumentRepository(IDocumentRepository):
         model = await DocumentModel.find_one(DocumentModel.checksum == checksum)
         return model.to_entity() if model else None
 
-    async def update(self, document: Document) -> Document | None:
+    async def update(self, document_id: str, fields: dict) -> Document | None:
         """
         Actualiza los metadatos de un documento existente.
 
-        Solo se actualizan los campos mutables (name, extracted_text, updated_at).
-        El checksum y created_at son inmutables por diseño del dominio.
-
-        Returns:
-            La entidad actualizada si existía, None si no encontró el documento.
+        Solo permite actualizar campos de metadatos (ej: filename).
+        El checksum y el texto extraído son inmutables por diseño del dominio.
         """
         try:
-            object_id = PydanticObjectId(document.id)
+            object_id = PydanticObjectId(document_id)
         except Exception:
+            logger.debug("document_id con formato inválido: %s", document_id)
             return None
 
         model = await DocumentModel.get(object_id)
         if not model:
-            logger.warning("Update fallido: documento no encontrado id=%s", document.id)
+            logger.warning("Update fallido: documento no encontrado id=%s", document_id)
             return None
 
-        # Usamos .set() de Beanie: hace un $set parcial en Mongo (no reemplaza todo el doc)
-        await model.set({
-            DocumentModel.name: document.name,
-            DocumentModel.extracted_text: document.extracted_text,
-            DocumentModel.updated_at: datetime.now(timezone.utc),
-        })
+        # Solo campos permitidos (metadatos) - KISS: no exponer campos internos
+        update_data = {}
+        if "filename" in fields:
+            update_data[DocumentModel.name] = fields["filename"]
+        
+        update_data[DocumentModel.updated_at] = datetime.now(timezone.utc)
 
-        logger.info("Documento actualizado id=%s", document.id)
+        await model.set(update_data)
+        logger.info("Documento actualizado id=%s", document_id)
         return model.to_entity()
 
     async def delete(self, document_id: str) -> bool:
