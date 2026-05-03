@@ -21,8 +21,12 @@ class IDocumentRepository(ABC):
         """
         ...
     @abstractmethod
-    async def get_all(self) -> list[Document]:
-        """Retorna todos los documentos almacenados.
+    async def get_all(self, skip: int = 0, limit: int = 20) -> list[Document]:
+        """Retorna documentos almacenados con paginación.
+
+        Args:
+            skip: Número de documentos a saltar (offset).
+            limit: Cantidad máxima de documentos a retornar.
 
         Returns:
             Lista (puede estar vacía) de entidades Document.
