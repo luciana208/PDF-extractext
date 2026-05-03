@@ -72,13 +72,17 @@ class DocumentService(IDocumentService):
 
         return await self._repository.save(document)
 
-    async def get_all(self) -> list[Document]:
-        """Retorna todos los documentos almacenados.
+    async def get_all(self, skip: int = 0, limit: int = 20) -> list[Document]:
+        """Retorna documentos almacenados con paginación.
+
+        Args:
+            skip: Documentos a saltar (offset).
+            limit: Máximo de documentos por página.
 
         Returns:
             Lista de entidades Document (puede estar vacía).
         """
-        return await self._repository.get_all()
+        return await self._repository.get_all(skip=skip, limit=limit)
 
     async def get_by_id(self, document_id: str) -> Document:
         """Obtiene un documento por su ID.

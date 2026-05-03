@@ -28,8 +28,12 @@ class IDocumentService(ABC):
         ...
 
     @abstractmethod
-    async def get_all(self) -> list[Document]:
-        """Retorna todos los documentos del sistema.
+    async def get_all(self, skip: int = 0, limit: int = 20) -> list[Document]:
+        """Retorna documentos del sistema con paginación.
+
+        Args:
+            skip: Documentos a saltar (offset).
+            limit: Máximo de documentos por página.
 
         Returns:
             Lista de entidades Document (puede estar vacía).

@@ -23,8 +23,8 @@ class DocumentController:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
         return DocumentResponseDTO.from_entity(document)
 
-    async def get_all_documents(self) -> list[DocumentResponseDTO]:
-        documents = await self._service.get_all()
+    async def get_all_documents(self, skip: int = 0, limit: int = 20) -> list[DocumentResponseDTO]:
+        documents = await self._service.get_all(skip=skip, limit=limit)
         return [DocumentResponseDTO.from_entity(d) for d in documents]
 
     async def get_document_by_id(self, document_id: str) -> DocumentResponseDTO:
