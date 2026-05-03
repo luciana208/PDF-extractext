@@ -32,7 +32,6 @@ from pymongo.errors import DuplicateKeyError
 
 from app.business.entities.document import Document
 from app.business.repositories.interfaces.i_document_repository import IDocumentRepository
-from app.data.dto.document_dto import DocumentDTO
 from app.data.models.document_model import DocumentModel
 
 logger = logging.getLogger(__name__)
@@ -75,13 +74,18 @@ class MongoDocumentRepository(IDocumentRepository):
         logger.info("Documento guardado con id=%s", model.id)
         return model.to_entity()
 
-    async def get_all(self) -> list[Document]:
+    async def get_all(self, skip: int = 0, limit: int = 20) -> list[Document]:
         """
-        Recupera todos los documentos de la colección.
+        Recupera documentos paginados de la colección.
 
-        Retorna lista vacía si no hay documentos (nunca retorna None → KISS).
+        Args:
+            skip: Número de documentos a saltar (offset).
+            limit: Máximo de documentos a retornar.
+
+        Returns:
+            Lista de entidades Document (puede estar vacía, nunca None → KISS).
         """
-        models = await DocumentModel.find_all().to_list()
+        models = await DocumentModel.find_all().skip(skip).limit(limit).to_list()
         return [m.to_entity() for m in models]
 
     async def get_by_id(self, document_id: str) -> Document | None:
@@ -123,6 +127,13 @@ class MongoDocumentRepository(IDocumentRepository):
 
         Solo permite actualizar campos de metadatos (ej: filename).
         El checksum y el texto extraído son inmutables por diseño del dominio.
+
+        Args:
+            document_id: ID del documento a actualizar.
+            fields: Diccionario con los campos a modificar y sus nuevos valores.
+
+        Returns:
+            La entidad actualizada si existía, None si no se encontró el documento.
         """
         try:
             object_id = PydanticObjectId(document_id)
@@ -149,6 +160,9 @@ class MongoDocumentRepository(IDocumentRepository):
     async def delete(self, document_id: str) -> bool:
         """
         Elimina un documento por su id.
+
+        Args:
+            document_id: ID del documento a eliminar.
 
         Returns:
             True si el documento existía y fue eliminado.
