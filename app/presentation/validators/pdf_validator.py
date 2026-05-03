@@ -19,10 +19,7 @@ Principios aplicados:
 
 from fastapi import HTTPException, UploadFile, status
 
-# Tamaño máximo permitido: 10 MB expresado en bytes.
-# Este valor debería venir de config.py en la integración final;
-# se define aquí como constante para mantener KISS en esta etapa.
-MAX_PDF_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
+from app.config.settings import settings
 
 # Los primeros 4 bytes de todo archivo PDF válido (firma del formato).
 PDF_MAGIC_BYTES: bytes = b"%PDF"
@@ -33,8 +30,10 @@ async def validate_pdf(file: UploadFile) -> None:
     Valida que el archivo recibido sea un PDF real y no supere el tamaño
     máximo configurado.
 
-    Lee solo los primeros 4 bytes para verificar la firma (magic bytes) y luego lee el resto para calcular el tamaño total. Al terminar,
-    rebobina el cursor del archivo para que el siguiente módulo pueda leerlo completo.
+    Lee solo los primeros 4 bytes para verificar la firma (magic bytes) y
+    usa seek() para obtener el tamaño total sin cargar el archivo en memoria.
+    Al terminar, rebobina el cursor para que el siguiente módulo pueda leerlo
+    completo desde el principio.
 
     Args:
         file: El archivo subido por el cliente (FastAPI UploadFile).
@@ -52,18 +51,16 @@ async def validate_pdf(file: UploadFile) -> None:
             detail="El archivo no es un PDF válido.",
         )
 
-    # — Paso 2: calcular tamaño total —
-    # Ya leímos 4 bytes; leemos el resto y sumamos.
-    rest = await file.read()
-    total_size = len(header) + len(rest)
+    # — Paso 2: calcular tamaño total sin leer contenido —
+    # Usamos seek() para mover el cursor al final y obtener la posición.
+    # Esto evita cargar todo el archivo en memoria (optimización de rendimiento).
+    await file.seek(0, 2)  # 2 = SEEK_END (ir al final del archivo)
+    total_size = await file.tell()
+    await file.seek(0)     # Volver al inicio para el siguiente lector
 
-    if total_size > MAX_PDF_SIZE_BYTES:
+    if total_size > settings.MAX_PDF_SIZE_BYTES:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail=f"El archivo supera el tamaño máximo de "
-                   f"{MAX_PDF_SIZE_BYTES // (1024 * 1024)} MB.",
+                   f"{settings.MAX_PDF_SIZE_MB} MB.",
         )
-
-    # — Paso 3: rebobinar el cursor —
-    # El Service necesita leer el archivo completo desde el principio.
-    await file.seek(0)
