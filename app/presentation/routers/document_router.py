@@ -22,7 +22,7 @@ Principios aplicados:
     está en el Controller.
 """
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
 
 from app.dependencies import get_document_controller
 from app.presentation.controllers.document_controller import DocumentController
@@ -68,16 +68,21 @@ async def upload_document(
     "/",
     response_model=list[DocumentResponseDTO],
     status_code=status.HTTP_200_OK,
-    summary="Listar todos los documentos",
+    summary="Listar documentos (paginado)",
 )
 async def get_all_documents(
+    skip: int = Query(0, ge=0, description="Documentos a saltar para paginación."),
+    limit: int = Query(20, ge=1, le=100, description="Cantidad máxima de documentos por página (1-100)."),
     controller: DocumentController = Depends(get_document_controller),
 ) -> list[DocumentResponseDTO]:
     """
-    Devuelve la lista de todos los documentos almacenados.
-    Retorna una lista vacía si no hay documentos.
+    Devuelve la lista paginada de documentos almacenados.
+    
+    - skip: cuántos documentos saltar (para navegar páginas).
+    - limit: cuántos documentos traer por página (máx. 100).
+    - Retorna una lista vacía si no hay documentos.
     """
-    return await controller.get_all_documents()
+    return await controller.get_all_documents(skip=skip, limit=limit)
 
 
 @router.get(
