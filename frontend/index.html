@@ -1,16 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>PDF Extractor</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Extractext</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="./css/styles.css">
 </head>
-<body class="container mt-5">
+<body>
 
-  <h1>📄 PDF Extractor</h1>
+  <!-- Top bar -->
+  <nav class="topbar">
+    <a href="index.html" class="topbar-brand">
+      <div class="brand-icon">📄</div>
+      PDF Extractext
+    </a>
+    <div class="topbar-nav">
+      <a href="index.html" class="active">Inicio</a>
+      <a href="documents.html">Documentos</a>
+      <a href="upload.html">Subir</a>
+    </div>
+  </nav>
 
-  <a href="documents.html" class="btn btn-primary mt-3">Ver documentos</a>
-  <a href="upload.html" class="btn btn-success mt-3">Subir PDF</a>
+  <!-- Hero -->
+  <div class="page-wrapper">
+    <div class="hero">
+      <div class="hero-badge">
+        <span>⚡</span> API REST · FastAPI · MongoDB
+      </div>
+      <h1>Extracción de texto<br>desde <span>PDFs</span></h1>
+      <p>Subí un archivo PDF y obtené su contenido textual de forma automática. Gestión completa con CRUD, metadatos y almacenamiento persistente.</p>
+      <div class="hero-actions">
+        <a href="upload.html" class="btn btn-success btn-lg">↑ Subir PDF</a>
+        <a href="documents.html" class="btn btn-secondary btn-lg">Ver documentos</a>
+      </div>
+    </div>
+
+    <!-- Feature cards -->
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Extracción automática</h3>
+        <p>Texto extraído al instante desde cualquier PDF con PyMuPDF y pdfplumber.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗃️</div>
+        <h3>Almacenamiento persistente</h3>
+        <p>Documentos guardados en MongoDB con metadatos completos y checksum.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔁</div>
+        <h3>CRUD completo</h3>
+        <p>Subir, consultar, modificar y eliminar documentos vía API RESTful.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🐳</div>
+        <h3>Containerizado</h3>
+        <p>Docker Compose para ejecución reproducible en cualquier entorno.</p>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>

@@ -283,6 +283,13 @@ PYTHONPATH=. uv run pytest tests/unit/ --cov=app --cov-report=term-missing
 > localmente sin Docker, levantá primero una instancia de MongoDB en `localhost:27017`
 > o usá el docker-compose.test.yml que lo hace automáticamente.
 
+> ⚠️ Si al ejecutar `docker compose up` aparece el error `port is already allocated` en el puerto 27017,
+> significa que tenés otro contenedor de MongoDB corriendo. Detenelo primero:
+> ```bash
+> docker rm -f mongo-test
+> ```
+> Luego volvé a ejecutar `docker compose up --build`.
+
 ---
 
 ## 📐 Principios aplicados
