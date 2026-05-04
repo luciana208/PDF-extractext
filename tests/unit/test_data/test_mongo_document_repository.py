@@ -113,8 +113,15 @@ class TestGetAll:
         model1 = make_mock_model(entity1)
         model2 = make_mock_model(entity2)
 
+        # Construir la cadena de mocks awaitable: find_all().skip().limit().to_list()
+        mock_limit = MagicMock()
+        mock_limit.to_list = AsyncMock(return_value=[model1, model2])
+        
+        mock_skip = MagicMock()
+        mock_skip.limit = MagicMock(return_value=mock_limit)
+        
         mock_find = MagicMock()
-        mock_find.to_list = AsyncMock(return_value=[model1, model2])
+        mock_find.skip = MagicMock(return_value=mock_skip)
 
         with patch("app.data.repositories.mongo_document_repository.DocumentModel") as MockModel:
             MockModel.find_all.return_value = mock_find
@@ -133,8 +140,14 @@ class TestGetAll:
         """
         from app.data.repositories.mongo_document_repository import MongoDocumentRepository
 
+        mock_limit = MagicMock()
+        mock_limit.to_list = AsyncMock(return_value=[])
+        
+        mock_skip = MagicMock()
+        mock_skip.limit = MagicMock(return_value=mock_limit)
+        
         mock_find = MagicMock()
-        mock_find.to_list = AsyncMock(return_value=[])
+        mock_find.skip = MagicMock(return_value=mock_skip)
 
         with patch("app.data.repositories.mongo_document_repository.DocumentModel") as MockModel:
             MockModel.find_all.return_value = mock_find
@@ -143,7 +156,6 @@ class TestGetAll:
             result = await repo.get_all()
 
         assert result == []
-
 
 class TestGetById:
     """Tests del método get_by_id()."""

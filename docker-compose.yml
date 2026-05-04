@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: pdf_extract_app
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017
+      - DB_NAME=pdf_extraction_db
+      - MAX_PDF_SIZE_MB=10
+    depends_on:
+      - mongo
+    volumes:
+      - ./app:/app/app
+
+  mongo:
+    image: mongo:6
+    container_name: pdf_extract_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

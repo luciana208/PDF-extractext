@@ -1,0 +1,18 @@
+cat > .dockerignore << 'EOF'
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.git/
+.gitignore
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+docker-compose*.yml
+Dockerfile*

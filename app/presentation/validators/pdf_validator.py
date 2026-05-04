@@ -52,15 +52,27 @@ async def validate_pdf(file: UploadFile) -> None:
         )
 
     # — Paso 2: calcular tamaño total sin leer contenido —
-    # Usamos seek() para mover el cursor al final y obtener la posición.
-    # Esto evita cargar todo el archivo en memoria (optimización de rendimiento).
-    await file.seek(0, 2)  # 2 = SEEK_END (ir al final del archivo)
-    total_size = await file.tell()
-    await file.seek(0)     # Volver al inicio para el siguiente lector
+    # FastAPI UploadFile.seek() solo acepta offset, no whence.
+    # Usamos read() para consumir todo y medir, o confiamos en file.size si está disponible.
+    # Optimización: si file.size existe (Starlette lo setea), lo usamos directamente.
+    if hasattr(file, 'size') and file.size is not None:
+        total_size = file.size
+    else:
+        # Fallback: leer todo el contenido para medir (menos eficiente pero funciona)
+        current_pos = len(header)
+        while True:
+            chunk = await file.read(8192)
+            if not chunk:
+                break
+            current_pos += len(chunk)
+        total_size = current_pos
+
+    # — Paso 3: rebobinar para el siguiente lector —
+    await file.seek(0)
 
     if total_size > settings.MAX_PDF_SIZE_BYTES:
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail=f"El archivo supera el tamaño máximo de "
                    f"{settings.MAX_PDF_SIZE_MB} MB.",
         )

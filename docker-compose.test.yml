@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: pdf_extract_test
+    environment:
+      - MONGO_URL=mongodb://mongo:27017
+      - DB_NAME=pdf_test_db
+      - MAX_PDF_SIZE_MB=10
+    depends_on:
+      - mongo
+    command: ["pytest", "tests/", "-v"]
+
+  mongo:
+    image: mongo:6
+    container_name: pdf_extract_mongo_test
+
+volumes:
+  mongo_test_data:

@@ -38,7 +38,8 @@ from beanie import init_beanie
 from app.main import app
 from app.data.database.mongo_connection import connect, disconnect, get_database
 from app.data.models.document_model import DocumentModel
-from app.presentation.validators.pdf_validator import MAX_PDF_SIZE_BYTES, PDF_MAGIC_BYTES
+from app.config.settings import settings
+from app.presentation.validators.pdf_validator import PDF_MAGIC_BYTES
 
 
 # ------------------------------------------------------------------ #
@@ -193,7 +194,7 @@ async def test_oversized_pdf_returns_413(async_client: AsyncClient):
     Entonces: 413 Request Entity Too Large — el sistema rechaza el archivo por tamaño
     """
     # Magic bytes correctos + contenido que lleva el total por encima de MAX_PDF_SIZE_BYTES
-    oversized = PDF_MAGIC_BYTES + b"x" * MAX_PDF_SIZE_BYTES
+    oversized = PDF_MAGIC_BYTES + b"x" * settings.MAX_PDF_SIZE_BYTES
     files = {"file": ("pesado.pdf", oversized, "application/pdf")}
 
     response = await async_client.post("/api/v1/documents/", files=files)
@@ -211,9 +212,9 @@ async def test_pdf_at_exact_max_size_is_accepted(async_client: AsyncClient):
     Entonces: 201 Created — el límite es inclusivo (<=), el archivo justo en el borde se acepta
     """
     # Magic bytes (4 bytes) + relleno hasta llegar a exactamente MAX_PDF_SIZE_BYTES
-    padding = MAX_PDF_SIZE_BYTES - len(PDF_MAGIC_BYTES)
+    padding = settings.MAX_PDF_SIZE_BYTES - len(PDF_MAGIC_BYTES)
     exact_size = PDF_MAGIC_BYTES + b"x" * padding
-    assert len(exact_size) == MAX_PDF_SIZE_BYTES
+    assert len(exact_size) == settings.MAX_PDF_SIZE_BYTES
 
     files = {"file": ("limite_exacto.pdf", exact_size, "application/pdf")}
 

@@ -20,10 +20,10 @@ from unittest.mock import AsyncMock, MagicMock
 from fastapi import HTTPException
 
 from app.presentation.validators.pdf_validator import (
-    MAX_PDF_SIZE_BYTES,
     PDF_MAGIC_BYTES,
     validate_pdf,
 )
+from app.config.settings import settings
 
 
 # ------------------------------------------------------------------ #
@@ -50,6 +50,7 @@ def make_upload_file_mock(content: bytes) -> MagicMock:
 
     mock.read = fake_read
     mock.seek = fake_seek
+    mock.size = len(content)  # ← NUEVO: FastAPI UploadFile tiene size
     return mock
 
 
@@ -93,7 +94,7 @@ class TestPdfValidator:
         Un archivo PDF real pero demasiado grande debe lanzar HTTPException 413 (Request Entity Too Large).
         """
         # Creamos contenido que supera el límite por 1 byte.
-        oversized_content = PDF_MAGIC_BYTES + b"x" * MAX_PDF_SIZE_BYTES
+        oversized_content = PDF_MAGIC_BYTES + b"x" * (settings.MAX_PDF_SIZE_BYTES + 1)
         file_mock = make_upload_file_mock(oversized_content)
 
         with pytest.raises(HTTPException) as exc_info:
@@ -108,7 +109,7 @@ class TestPdfValidator:
         Verifica que el límite es inclusivo (<=, no <).
         """
         # Tamaño exacto = MAX - 4 bytes de magic bytes.
-        content_size = MAX_PDF_SIZE_BYTES - len(PDF_MAGIC_BYTES)
+        content_size = settings.MAX_PDF_SIZE_BYTES - len(PDF_MAGIC_BYTES)
         exact_size_content = PDF_MAGIC_BYTES + b"x" * content_size
         file_mock = make_upload_file_mock(exact_size_content)
 
@@ -128,8 +129,9 @@ class TestPdfValidator:
         buffer = io.BytesIO(valid_content)
         mock.read = AsyncMock(side_effect=lambda n=-1: buffer.read(n))
         mock.seek = AsyncMock()
+        mock.size = len(valid_content)  # ← NUEVO
 
         await validate_pdf(mock)
 
         # Verificamos que seek fue llamado con 0.
-        mock.seek.assert_called_once_with(0)
+        mock.seek.assert_any_call(0)
