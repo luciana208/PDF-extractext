@@ -251,7 +251,8 @@ uv run fastapi dev app/main.py
 
 ## 🧪 Testing
 
-El proyecto sigue la metodología **TDD**: los tests se escriben antes que el código de producción. Hay tests unitarios por capa y tests de integración para el flujo completo.
+El proyecto sigue la metodología **TDD**: los tests se escriben antes que el código de producción.
+Hay tests unitarios por capa y tests de integración para el flujo completo.
 
 ### Con Docker (recomendado)
 
@@ -263,21 +264,24 @@ docker compose -f docker-compose.test.yml up --build --abort-on-container-exit
 
 ### Sin Docker
 
+Los **tests unitarios** no dependen de ningún servicio externo y pueden correrse directamente:
+
 ```bash
-# Todos los tests
-uv run pytest
+# Tests unitarios (no requieren MongoDB)
+PYTHONPATH=. uv run pytest tests/unit/ -v
 
-# Tests de una capa específica
-uv run pytest tests/unit/test_presentation/
-uv run pytest tests/unit/test_business/
-uv run pytest tests/unit/test_data/
+# Por capa específica
+PYTHONPATH=. uv run pytest tests/unit/test_presentation/
+PYTHONPATH=. uv run pytest tests/unit/test_business/
+PYTHONPATH=. uv run pytest tests/unit/test_data/
 
-# Solo integración
-uv run pytest tests/integration/
-
-# Ver cobertura
-uv run pytest --cov=app --cov-report=term-missing
+# Con cobertura
+PYTHONPATH=. uv run pytest tests/unit/ --cov=app --cov-report=term-missing
 ```
+
+> ⚠️ Los **tests de integración** requieren MongoDB corriendo. Si querés ejecutarlos
+> localmente sin Docker, levantá primero una instancia de MongoDB en `localhost:27017`
+> o usá el docker-compose.test.yml que lo hace automáticamente.
 
 ---
 
