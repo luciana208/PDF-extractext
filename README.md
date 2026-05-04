@@ -162,6 +162,30 @@ Base URL: `http://localhost:8000/api/v1`
 
 - [Docker](https://docs.docker.com/get-docker/) y [Docker Compose](https://docs.docker.com/compose/) instalados
 
+### ⚠️ Permisos en Linux
+
+En Linux, el daemon de Docker requiere permisos especiales. Si al ejecutar `docker compose` aparece un error como:
+
+```
+permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock
+```
+
+La solución es agregar tu usuario al grupo `docker` (solo se hace una vez):
+
+```bash
+sudo usermod -aG docker $USER
+```
+
+Luego aplicá el cambio sin cerrar sesión:
+
+```bash
+newgrp docker
+```
+
+> En **Windows** con Docker Desktop este problema no aplica: el instalador configura los permisos automáticamente.
+
+---
+
 ### Con Docker (recomendado)
 
 **1. Clonar el repositorio**
