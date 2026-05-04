@@ -2,9 +2,10 @@
 
 > API REST para extracción de texto y gestión de documentos PDF, desarrollada con arquitectura de 3 capas y FastAPI.
 
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-009688?style=flat-square&logo=fastapi&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-7.0+-47A248?style=flat-square&logo=mongodb&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-compose-2496ED?style=flat-square&logo=docker&logoColor=white)
 ![UV](https://img.shields.io/badge/UV-package_manager-DE5FE9?style=flat-square)
 ![License](https://img.shields.io/badge/licencia-MIT-blue?style=flat-square)
 
@@ -42,6 +43,7 @@ El proyecto está desarrollado como trabajo práctico universitario, aplicando a
 - 🏗️ **Arquitectura de 3 capas** (Presentación, Negocio, Datos)
 - 🧪 **Desarrollo guiado por tests** (TDD) con cobertura por capa
 - ⚙️ **Gestión de configuración** siguiendo los primeros 6 factores de 12-Factor App
+- 🐳 **Containerizado con Docker** para ejecución y testing reproducibles
 
 ---
 
@@ -101,6 +103,10 @@ pdf-extractext/
 │   └── integration/
 │
 ├── docs/
+├── docker-compose.yml             # Stack de producción/desarrollo
+├── docker-compose.test.yml        # Stack de testing aislado
+├── Dockerfile
+├── Dockerfile.test
 ├── pyproject.toml
 └── README.md
 ```
@@ -111,14 +117,14 @@ pdf-extractext/
 
 | Tecnología | Rol en el proyecto |
 |---|---|
-| **Python 3.11+** | Lenguaje principal |
+| **Python 3.12+** | Lenguaje principal |
 | **FastAPI** | Framework web para la API REST |
 | **UV** | Gestor de paquetes y entornos virtuales |
 | **MongoDB** | Base de datos NoSQL para persistencia |
 | **Motor** | Driver asíncrono de MongoDB para Python |
 | **Pydantic** | Validación de datos y DTOs |
 | **PyMuPDF / pdfplumber** | Extracción de texto de archivos PDF |
-| **Modelo de IA** | Generación de resúmenes *(por definir)* |
+| **Docker & Docker Compose** | Containerización y orquestación |
 | **pytest + pytest-asyncio** | Framework de testing |
 
 ---
@@ -154,11 +160,9 @@ Base URL: `http://localhost:8000/api/v1`
 
 ### Prerrequisitos
 
-- Python 3.11 o superior
-- [UV](https://docs.astral.sh/uv/) instalado
-- MongoDB corriendo localmente o una URI de MongoDB Atlas
+- [Docker](https://docs.docker.com/get-docker/) y [Docker Compose](https://docs.docker.com/compose/) instalados
 
-### Pasos
+### Con Docker (recomendado)
 
 **1. Clonar el repositorio**
 
@@ -167,35 +171,32 @@ git clone https://github.com/tu-usuario/pdf-extractext.git
 cd pdf-extractext
 ```
 
-**2. Instalar dependencias con UV**
-
-```bash
-uv sync
-```
-
-**3. Configurar variables de entorno**
+**2. Configurar variables de entorno**
 
 Crear un archivo `.env` en la raíz del proyecto:
 
 ```env
-MONGODB_URL=mongodb://localhost:27017
+MONGODB_URL=mongodb://mongo:27017
 DATABASE_NAME=pdf_extractext
 MAX_PDF_SIZE_MB=10
 ```
 
-**4. Ejecutar la aplicación**
+**3. Levantar los servicios**
 
 ```bash
-uv run fastapi dev app/main.py
+docker compose up --build
 ```
 
-**5. Acceder a la documentación interactiva**
+Esto levanta la API y MongoDB juntos. La API queda disponible en `http://localhost:8000`.
+
+**4. Acceder a la documentación interactiva**
 
 Abrí en el navegador: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-**Como acceder el frontend:**
+**5. Acceder al frontend**
 
 Abrir una segunda terminal y ejecutar:
+
 ```bash
 cd frontend
 python3 -m http.server 5500
@@ -205,61 +206,73 @@ Luego abrí en el navegador: [http://localhost:5500](http://localhost:5500)
 
 ---
 
+### Sin Docker (alternativa local)
+
+Requiere Python 3.12+, [UV](https://docs.astral.sh/uv/) y MongoDB corriendo localmente.
+
+```bash
+# Instalar dependencias
+uv sync
+
+# Configurar .env con MongoDB local
+echo "MONGODB_URL=mongodb://localhost:27017" > .env
+echo "DATABASE_NAME=pdf_extractext" >> .env
+echo "MAX_PDF_SIZE_MB=10" >> .env
+
+# Ejecutar la aplicación
+uv run fastapi dev app/main.py
+```
+
+---
+
 ## 🧪 Testing
 
 El proyecto sigue la metodología **TDD**: los tests se escriben antes que el código de producción. Hay tests unitarios por capa y tests de integración para el flujo completo.
 
-**Ejecutar todos los tests:**
+### Con Docker (recomendado)
+
+Levanta un entorno aislado con su propia base de datos de test y ejecuta toda la suite:
 
 ```bash
-uv run pytest
+docker compose -f docker-compose.test.yml up --build --abort-on-container-exit
 ```
 
-**Ejecutar tests de una capa específica:**
+### Sin Docker
 
 ```bash
+# Todos los tests
+uv run pytest
+
+# Tests de una capa específica
 uv run pytest tests/unit/test_presentation/
 uv run pytest tests/unit/test_business/
 uv run pytest tests/unit/test_data/
-```
 
-**Ver cobertura:**
+# Solo integración
+uv run pytest tests/integration/
 
-```bash
+# Ver cobertura
 uv run pytest --cov=app --cov-report=term-missing
 ```
 
 ---
 
-## 📐 Principios Aplicados
+## 📐 Principios aplicados
 
-### Metodologías
-
-- **TDD** — Los tests se escriben antes del código de producción
-- **GitHub Flow** — Ramas por feature, Pull Requests con revisión entre pares
-- **12-Factor App** — Se aplican los primeros 6 factores (codebase, dependencias, configuración, servicios de respaldo, build/run/release, procesos)
-
-### Principios de Programación
-
-- **KISS** *(Keep It Simple, Stupid)* — Soluciones simples y directas, sin complejidad innecesaria
-- **DRY** *(Don't Repeat Yourself)* — Sin duplicación de lógica ni código
-- **YAGNI** *(You Aren't Gonna Need It)* — Solo se implementa lo que se necesita ahora
-- **SOLID** — Especialmente SRP (una responsabilidad por clase) y DIP (dependencias hacia abstracciones)
-
-### Arquitectura
-
-- **Clean Architecture** — Separación estricta de responsabilidades entre capas
-- **Dependency Injection** — Las dependencias se inyectan, no se instancian internamente
-- **Interface Segregation** — Las capas se comunican a través de contratos (interfaces), no implementaciones concretas
+- **Arquitectura de 3 capas** con separación estricta de responsabilidades
+- **TDD** (Test-Driven Development): tests primero, código después
+- **12-Factor App** (factores I–VI): codebase, dependencias, configuración, servicios de respaldo, build/run/release, procesos
+- **Principios SOLID** aplicados en el diseño de clases y módulos
+- **Inyección de dependencias** para desacoplar capas e interfaces
 
 ---
 
 ## 👥 Equipo
 
-Proyecto desarrollado como trabajo práctico universitario.
+> Completar con los integrantes del grupo.
 
-| Apellido y Nombre | Capa | GitHub |
-|---|---|---|
-| Piasterlini, Luciana Camila | Presentación | [@luciana208](https://github.com/luciana208) |
-| Flores, Fabio Javier | Negocio | [@fabjav](https://github.com/fabjav) |
-| Roa, Celina Juana Esmeralda | Datos | [@LinaJER](https://github.com/LinaJER) |
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
