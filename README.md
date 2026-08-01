@@ -217,16 +217,7 @@ Esto levanta la API y MongoDB juntos. La API queda disponible en `http://localho
 
 Abrí en el navegador: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-**5. Acceder al frontend**
-
-Abrir una segunda terminal y ejecutar:
-
-```bash
-cd frontend
-python3 -m http.server 5500
-```
-
-Luego abrí en el navegador: [http://localhost:5500](http://localhost:5500)
+> Este proyecto es una API backend pura. No incluye frontend ni páginas estáticas.
 
 ---
 
