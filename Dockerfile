@@ -2,24 +2,27 @@ FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
 WORKDIR /app
 
-# Instalar dependencias del sistema
+# Instalar dependencias del sistema necesarias en producción
 RUN apt-get update && apt-get install -y \
     gcc \
     tesseract-ocr \
     libtesseract-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar archivos de configuración
+# Copiar la configuración del proyecto y el código fuente antes de instalar
 COPY pyproject.toml .
-COPY README.md .
+COPY app/ ./app/
 
 # Instalar solo dependencias de producción
 RUN uv pip install --system -e .
 
-# Copiar código fuente
-COPY app/ ./app/
+# Crear usuario no-root y asegurar permisos sobre el directorio de trabajo
+RUN groupadd --system appuser \
+    && useradd --system --gid appuser --home-dir /app --shell /usr/sbin/nologin appuser \
+    && chown -R appuser:appuser /app
 
-# Variables de entorno
+USER appuser
+
 ENV MONGO_URL=mongodb://mongo:27017
 ENV DB_NAME=pdf_extraction_db
 ENV MAX_PDF_SIZE_MB=10

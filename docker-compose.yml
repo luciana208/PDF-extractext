@@ -6,22 +6,26 @@ services:
     container_name: pdf_extract_app
     ports:
       - "8000:8000"
-    environment:
-      - MONGO_URL=mongodb://mongo:27017
-      - DB_NAME=pdf_extraction_db
-      - MAX_PDF_SIZE_MB=10
+    env_file:
+      - .env
     depends_on:
       - mongo
-    volumes:
-      - ./app:/app/app
+    networks:
+      - backend
 
   mongo:
     image: mongo:6
     container_name: pdf_extract_mongo
-    ports:
-      - "27017:27017"
+    env_file:
+      - .env
     volumes:
       - mongo_data:/data/db
+    networks:
+      - backend
 
 volumes:
   mongo_data:
+
+networks:
+  backend:
+    driver: bridge
