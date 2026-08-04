@@ -1,4 +1,5 @@
-from fastapi import Response, UploadFile
+from fastapi import UploadFile, Response
+from starlette.responses import StreamingResponse
 
 from app.business.domain.exceptions import DocumentNotFoundError, DuplicateDocumentError
 from app.business.services.interfaces.i_document_service import IDocumentService
@@ -57,8 +58,10 @@ class DocumentController:
         else:
             download_name = original + ".txt"
 
-        return Response(
-            content=document.extracted_text,
-            media_type="text/plain; charset=utf-8",
-            headers={"Content-Disposition": f"attachment; filename=\"{download_name}\""},
-        )
+        # StreamingResponse expects an iterator of bytes
+        async def stream_text():
+            yield document.extracted_text.encode("utf-8")
+
+        headers = {"Content-Disposition": f"attachment; filename=\"{download_name}\""}
+
+        return StreamingResponse(stream_text(), media_type="text/plain; charset=utf-8", headers=headers)

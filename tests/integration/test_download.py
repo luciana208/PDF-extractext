@@ -68,3 +68,14 @@ async def test_download_text_file(async_client: AsyncClient, fake_pdf_bytes: byt
 
     # Body should equal the extracted_text stored
     assert download_resp.text == body["extracted_text"]
+
+
+@pytest.mark.asyncio
+async def test_download_nonexistent_returns_problemdetail(async_client: AsyncClient):
+    # Use an ID that is extremely unlikely to exist
+    missing_id = "64b6f0f0c2f9a1b2c3d4e5f6"
+    resp = await async_client.get(f"/api/v1/documents/{missing_id}/download")
+    assert resp.status_code == 404
+    body = resp.json()
+    assert set(["type", "title", "status", "detail", "instance"]).issubset(set(body.keys()))
+    assert body["status"] == 404
