@@ -22,7 +22,13 @@ def build_problem_detail(status_code: int, title: str, detail: str) -> dict[str,
 
 @app.exception_handler(ProblemDetailError)
 async def problem_detail_handler(request: Request, exc: ProblemDetailError) -> JSONResponse:
-    return JSONResponse(status_code=exc.status_code, content=build_problem_detail(exc.status_code, exc.title, exc.detail))
+    body = build_problem_detail(exc.status_code, exc.title, exc.detail)
+    # RFC 9457 requires an "instance" member identifying the specific occurrence.
+    body["instance"] = str(request.url)
+    # If the exception exposes a specific type, use it.
+    if getattr(exc, "type", None):
+        body["type"] = exc.type
+    return JSONResponse(status_code=exc.status_code, content=body)
 
 app.add_middleware(
     CORSMiddleware,

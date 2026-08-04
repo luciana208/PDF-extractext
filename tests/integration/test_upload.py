@@ -122,6 +122,9 @@ async def test_upload_pdf_success(async_client: AsyncClient, fake_pdf_bytes: byt
     assert isinstance(body["extracted_text"], str)
     assert "created_at" in body
     assert "updated_at" in body
+    # Nuevo: la respuesta debe incluir un preview de texto (primeros 500 chars)
+    assert "text_preview" in body
+    assert body["text_preview"] == body["extracted_text"][:500]
 
     # Assert — Persistencia en MongoDB
     doc_id = body["id"]
@@ -149,6 +152,7 @@ async def test_upload_pdf_without_custom_name_uses_filename(async_client: AsyncC
     assert response.status_code == 201
     body = response.json()
     assert body["name"] == original_filename
+    assert "text_preview" in body
 
 
 @pytest.mark.asyncio
@@ -169,7 +173,10 @@ async def test_upload_duplicate_pdf_returns_409(async_client: AsyncClient, fake_
     response2 = await async_client.post("/api/v1/documents/", files=files2)
 
     assert response2.status_code == 409
-    assert "checksum" in response2.json()["detail"] or "already exists" in response2.json()["detail"]
+    # ProblemDetail format
+    body = response2.json()
+    assert set(["type", "title", "status", "detail", "instance"]).issubset(set(body.keys()))
+    assert body["status"] == 409
 
 
 @pytest.mark.asyncio
@@ -188,4 +195,8 @@ async def test_upload_non_pdf_returns_400(async_client: AsyncClient):
     )
 
     assert response.status_code == 400
-    assert "no es un PDF válido" in response.json()["detail"]
+    body = response.json()
+    # ProblemDetail format expected
+    assert set(["type", "title", "status", "detail", "instance"]).issubset(set(body.keys()))
+    assert body["status"] == 400
+    assert "no es un PDF válido" in body["detail"]

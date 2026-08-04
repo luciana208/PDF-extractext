@@ -50,8 +50,15 @@ class DocumentController:
 
     async def download_document_text(self, document_id: str) -> Response:
         document = await self._service.get_by_id(document_id)
+        # Use original filename but with .txt extension
+        original = document.filename or document_id
+        if original.lower().endswith(".pdf"):
+            download_name = original[: -4] + ".txt"
+        else:
+            download_name = original + ".txt"
+
         return Response(
             content=document.extracted_text,
             media_type="text/plain; charset=utf-8",
-            headers={"Content-Disposition": f"attachment; filename=\"{document_id}.txt\""},
+            headers={"Content-Disposition": f"attachment; filename=\"{download_name}\""},
         )
