@@ -78,7 +78,7 @@ def controller(mock_service) -> DocumentController:
 class TestUploadDocument:
 
     @pytest.mark.asyncio
-    async def test_upload_calls_validate_and_service(self, controller, mock_service, sample_response):
+    async def test_upload_calls_validate_and_service(self, controller, mock_service, sample_response, sample_entity):
         """
         El controller debe validar el PDF y luego llamar al service.
         Como el archivo tiene magic bytes válidos, la validación debe pasar.
@@ -99,6 +99,7 @@ class TestUploadDocument:
 
         mock_service.process_pdf.assert_called_once()
         assert result == sample_response
+        assert result.text_preview == sample_entity.extracted_text
 
 
 # ------------------------------------------------------------------ #

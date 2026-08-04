@@ -100,3 +100,9 @@ class TestDocumentResponseDTO:
         valid_data["extracted_text"] = ""
         dto = DocumentResponseDTO(**valid_data)
         assert dto.extracted_text == ""
+
+    def test_text_preview_is_truncated_to_500_chars(self, valid_data):
+        """El preview de texto debe limitarse a los primeros 500 caracteres."""
+        valid_data["extracted_text"] = "a" * 550
+        dto = DocumentResponseDTO(**valid_data)
+        assert dto.text_preview == "a" * 500

@@ -17,8 +17,9 @@ Principios aplicados:
   - DRY: la lógica de magic bytes está en un solo lugar.
 """
 
-from fastapi import HTTPException, UploadFile, status
+from fastapi import UploadFile
 
+from app.business.domain.exceptions import InvalidFileError
 from app.config.settings import settings
 
 # Los primeros 4 bytes de todo archivo PDF válido (firma del formato).
@@ -46,10 +47,7 @@ async def validate_pdf(file: UploadFile) -> None:
     # Leemos solo 4 bytes; es suficiente para confirmar la firma PDF.
     header = await file.read(4)
     if header != PDF_MAGIC_BYTES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El archivo no es un PDF válido.",
-        )
+        raise InvalidFileError("El archivo no es un PDF válido.", status_code=400)
 
     # — Paso 2: calcular tamaño total sin leer contenido —
     # FastAPI UploadFile.seek() solo acepta offset, no whence.
@@ -71,8 +69,7 @@ async def validate_pdf(file: UploadFile) -> None:
     await file.seek(0)
 
     if total_size > settings.MAX_PDF_SIZE_BYTES:
-        raise HTTPException(
-            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-            detail=f"El archivo supera el tamaño máximo de "
-                   f"{settings.MAX_PDF_SIZE_MB} MB.",
+        raise InvalidFileError(
+            f"El archivo supera el tamaño máximo de {settings.MAX_PDF_SIZE_MB} MB.",
+            status_code=413,
         )

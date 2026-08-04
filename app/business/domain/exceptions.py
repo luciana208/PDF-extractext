@@ -1,32 +1,42 @@
-"""
-Excepciones de dominio de la capa de Negocio.
+"""Excepciones de negocio para los documentos."""
 
-Centralizar las excepciones aquí evita duplicación (DRY) y permite
-que la capa de Presentación las capture con precisión para devolver
-el código HTTP correcto.
-
-Regla: las excepciones de negocio NO importan nada de FastAPI ni de MongoDB.
-Son excepciones Python puras, reutilizables en cualquier contexto.
-"""
+from fastapi import HTTPException
 
 
-class DocumentNotFoundError(Exception):
-    """Se lanza cuando se busca un documento que no existe en el sistema.
+class ProblemDetailError(HTTPException):
+    """Excepción HTTP compatible con Problem Details (RFC 9457)."""
 
-    La capa de Presentación debe traducir esta excepción a HTTP 404.
-    """
+    def __init__(self, status_code: int, title: str, detail: str, type_: str = "about:blank") -> None:
+        super().__init__(status_code=status_code, detail=detail)
+        self.title = title
+        self.type = type_
+
+
+class DocumentNotFoundError(ProblemDetailError):
+    """Se lanza cuando se busca un documento que no existe en el sistema."""
 
     def __init__(self, document_id: str) -> None:
-        super().__init__(f"Document '{document_id}' not found.")
+        super().__init__(status_code=404, title="Not Found", detail=f"Document '{document_id}' not found.")
         self.document_id = document_id
 
 
-class DuplicateDocumentError(Exception):
-    """Se lanza cuando se intenta guardar un PDF ya existente (mismo checksum).
-
-    La capa de Presentación debe traducir esta excepción a HTTP 409 Conflict.
-    """
+class DuplicatePDFError(ProblemDetailError):
+    """Se lanza cuando se intenta guardar un PDF ya existente (mismo checksum)."""
 
     def __init__(self, checksum: str) -> None:
-        super().__init__(f"A document with checksum '{checksum}' already exists.")
+        super().__init__(status_code=409, title="Conflict", detail=f"A document with checksum '{checksum}' already exists.")
         self.checksum = checksum
+
+
+class DuplicateDocumentError(DuplicatePDFError):
+    """Alias de compatibilidad para el flujo actual del servicio."""
+
+    pass
+
+
+class InvalidFileError(ProblemDetailError):
+    """Se lanza cuando el archivo enviado no es un PDF válido o supera el límite."""
+
+    def __init__(self, detail: str, status_code: int = 400) -> None:
+        title = "Bad Request" if status_code == 400 else "Payload Too Large"
+        super().__init__(status_code=status_code, title=title, detail=detail)

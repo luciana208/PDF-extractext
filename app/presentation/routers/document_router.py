@@ -22,7 +22,7 @@ Principios aplicados:
     está en el Controller.
 """
 
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Query, Response, UploadFile, status
 
 from app.dependencies import get_document_controller
 from app.presentation.controllers.document_controller import DocumentController
@@ -83,6 +83,19 @@ async def get_all_documents(
     - Retorna una lista vacía si no hay documentos.
     """
     return await controller.get_all_documents(skip=skip, limit=limit)
+
+
+@router.get(
+    "/{document_id}/download",
+    status_code=status.HTTP_200_OK,
+    summary="Descargar el texto extraído como .txt",
+)
+async def download_document_text(
+    document_id: str,
+    controller: DocumentController = Depends(get_document_controller),
+) -> Response:
+    """Devuelve el texto extraído de un documento como archivo .txt."""
+    return await controller.download_document_text(document_id)
 
 
 @router.get(

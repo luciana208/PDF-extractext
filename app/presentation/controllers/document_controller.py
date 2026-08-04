@@ -1,4 +1,4 @@
-from fastapi import HTTPException, UploadFile, status
+from fastapi import Response, UploadFile
 
 from app.business.domain.exceptions import DocumentNotFoundError, DuplicateDocumentError
 from app.business.services.interfaces.i_document_service import IDocumentService
@@ -19,8 +19,8 @@ class DocumentController:
         filename = dto.custom_name or file.filename
         try:
             document = await self._service.process_pdf(file_bytes, filename)
-        except DuplicateDocumentError as e:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+        except DuplicateDocumentError:
+            raise
         return DocumentResponseDTO.from_entity(document)
 
     async def get_all_documents(self, skip: int = 0, limit: int = 20) -> list[DocumentResponseDTO]:
@@ -30,20 +30,28 @@ class DocumentController:
     async def get_document_by_id(self, document_id: str) -> DocumentResponseDTO:
         try:
             document = await self._service.get_by_id(document_id)
-        except DocumentNotFoundError:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Documento '{document_id}' no encontrado.")
+        except DocumentNotFoundError as exc:
+            raise exc
         return DocumentResponseDTO.from_entity(document)
 
     async def update_document(self, document_id: str, dto: UpdateRequestDTO) -> DocumentResponseDTO:
         try:
             document = await self._service.update(document_id, dto.model_dump(exclude_none=True))
-        except DocumentNotFoundError:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Documento '{document_id}' no encontrado.")
+        except DocumentNotFoundError as exc:
+            raise exc
         return DocumentResponseDTO.from_entity(document)
 
     async def delete_document(self, document_id: str) -> dict[str, str]:
         try:
             await self._service.delete(document_id)
-        except DocumentNotFoundError:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Documento '{document_id}' no encontrado.")
+        except DocumentNotFoundError as exc:
+            raise exc
         return {"message": f"Documento '{document_id}' eliminado correctamente."}
+
+    async def download_document_text(self, document_id: str) -> Response:
+        document = await self._service.get_by_id(document_id)
+        return Response(
+            content=document.extracted_text,
+            media_type="text/plain; charset=utf-8",
+            headers={"Content-Disposition": f"attachment; filename=\"{document_id}.txt\""},
+        )

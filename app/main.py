@@ -1,12 +1,28 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from beanie import init_beanie
 
+from app.business.domain.exceptions import DocumentNotFoundError, DuplicatePDFError, InvalidFileError, ProblemDetailError
 from app.data.database.mongo_connection import connect, disconnect, get_database
 from app.data.models.document_model import DocumentModel
 from app.presentation.routers.document_router import router as document_router
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+
+def build_problem_detail(status_code: int, title: str, detail: str) -> dict[str, object]:
+    return {
+        "type": "about:blank",
+        "title": title,
+        "status": status_code,
+        "detail": detail,
+    }
+
+
+@app.exception_handler(ProblemDetailError)
+async def problem_detail_handler(request: Request, exc: ProblemDetailError) -> JSONResponse:
+    return JSONResponse(status_code=exc.status_code, content=build_problem_detail(exc.status_code, exc.title, exc.detail))
 
 app.add_middleware(
     CORSMiddleware,

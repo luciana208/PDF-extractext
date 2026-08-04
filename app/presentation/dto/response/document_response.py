@@ -11,8 +11,9 @@ Por qué es importante:
 """
 
 from datetime import datetime
-from pydantic import BaseModel, Field
 from typing import TYPE_CHECKING
+
+from pydantic import BaseModel, Field, computed_field
 
 if TYPE_CHECKING:
     from app.business.entities.document import Document
@@ -30,6 +31,11 @@ class DocumentResponseDTO(BaseModel):
         "frozen": True,
         "json_encoders": {datetime: lambda v: v.isoformat()},
     }
+
+    @computed_field(return_type=str)
+    @property
+    def text_preview(self) -> str:
+        return self.extracted_text[:500]
 
     @classmethod
     def from_entity(cls, document: "Document") -> "DocumentResponseDTO":
