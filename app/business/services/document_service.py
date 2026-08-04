@@ -101,6 +101,13 @@ class DocumentService(IDocumentService):
             raise DocumentNotFoundError(document_id)
         return document
 
+    async def get_text(self, document_id: str) -> Document:
+        """Retorna la entidad Document necesaria para descargar el texto.
+
+        Implementado como alias de `get_by_id` para dejar claro el propósito.
+        """
+        return await self.get_by_id(document_id)
+
     async def update(self, document_id: str, fields: dict) -> Document:
         """Actualiza metadatos de un documento.
 

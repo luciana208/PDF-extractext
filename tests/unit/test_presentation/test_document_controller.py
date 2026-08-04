@@ -56,19 +56,41 @@ def sample_response() -> DocumentResponseDTO:
 @pytest.fixture
 def mock_service(sample_entity) -> MagicMock:
     """Mock del IDocumentService con todos los métodos configurados."""
-    service = MagicMock()
-    service.process_pdf = AsyncMock(return_value=sample_entity)
-    service.get_all = AsyncMock(return_value=[sample_entity])
-    service.get_by_id = AsyncMock(return_value=sample_entity)
-    service.update = AsyncMock(return_value=sample_entity)
-    service.delete = AsyncMock(return_value=True)
-    return service
+    # Create individual use case mocks
+    process = MagicMock()
+    process.execute = AsyncMock(return_value=sample_entity)
+    list_uc = MagicMock()
+    list_uc.execute = AsyncMock(return_value=[sample_entity])
+    get_uc = MagicMock()
+    get_uc.execute = AsyncMock(return_value=sample_entity)
+    update_uc = MagicMock()
+    update_uc.execute = AsyncMock(return_value=sample_entity)
+    delete_uc = MagicMock()
+    delete_uc.execute = AsyncMock(return_value=True)
+    download_uc = MagicMock()
+    download_uc.execute = AsyncMock(return_value=sample_entity)
+
+    return {
+        "process": process,
+        "list": list_uc,
+        "get": get_uc,
+        "update": update_uc,
+        "delete": delete_uc,
+        "download": download_uc,
+    }
 
 
 @pytest.fixture
 def controller(mock_service) -> DocumentController:
     """Controller con el service mockeado inyectado."""
-    return DocumentController(service=mock_service)
+    return DocumentController(
+        process_pdf=mock_service["process"],
+        list_documents=mock_service["list"],
+        get_document=mock_service["get"],
+        update_document=mock_service["update"],
+        delete_document=mock_service["delete"],
+        download_text=mock_service["download"],
+    )
 
 
 # ------------------------------------------------------------------ #
@@ -97,7 +119,7 @@ class TestUploadDocument:
 
         result = await controller.upload_document(file_mock, dto)
 
-        mock_service.process_pdf.assert_called_once()
+        mock_service["process"].execute.assert_called_once()
         assert result == sample_response
         assert result.text_preview == sample_entity.extracted_text
 
@@ -113,13 +135,13 @@ class TestGetAllDocuments:
         """El controller debe devolver la lista que retorna el service."""
         result = await controller.get_all_documents()
 
-        mock_service.get_all.assert_called_once()
+        mock_service["list"].execute.assert_called_once()
         assert result == [sample_response]
 
     @pytest.mark.asyncio
     async def test_returns_empty_list_when_no_documents(self, controller, mock_service):
         """Si el service devuelve lista vacía, el controller también debe devolver lista vacía."""
-        mock_service.get_all = AsyncMock(return_value=[])
+        mock_service["list"].execute = AsyncMock(return_value=[])
 
         result = await controller.get_all_documents()
 
@@ -137,13 +159,13 @@ class TestGetDocumentById:
         """Si el service encuentra el documento, el controller lo devuelve."""
         result = await controller.get_document_by_id("abc123")
 
-        mock_service.get_by_id.assert_called_once_with("abc123")
+        mock_service["get"].execute.assert_called_once_with("abc123")
         assert result == sample_response
 
     @pytest.mark.asyncio
     async def test_raises_404_when_not_found(self, controller, mock_service):
         """Si el service lanza DocumentNotFoundError, el controller debe lanzar HTTPException 404."""
-        mock_service.get_by_id = AsyncMock(side_effect=DocumentNotFoundError("id_inexistente"))
+        mock_service["get"].execute = AsyncMock(side_effect=DocumentNotFoundError("id_inexistente"))
 
         with pytest.raises(HTTPException) as exc_info:
             await controller.get_document_by_id("id_inexistente")
@@ -165,13 +187,13 @@ class TestUpdateDocument:
 
         result = await controller.update_document("abc123", dto)
 
-        mock_service.update.assert_called_once_with("abc123", {"custom_name": "Nuevo nombre"})
+        mock_service["update"].execute.assert_called_once_with("abc123", {"custom_name": "Nuevo nombre"})
         assert result == sample_response
 
     @pytest.mark.asyncio
     async def test_raises_404_when_document_not_found(self, controller, mock_service):
         """Si el service lanza DocumentNotFoundError en update, el controller lanza 404."""
-        mock_service.update = AsyncMock(side_effect=DocumentNotFoundError("id_inexistente"))
+        mock_service["update"].execute = AsyncMock(side_effect=DocumentNotFoundError("id_inexistente"))
         dto = UpdateRequestDTO(custom_name="Nuevo nombre")
 
         with pytest.raises(HTTPException) as exc_info:
@@ -191,13 +213,13 @@ class TestDeleteDocument:
         """Si el service elimina correctamente, el controller devuelve mensaje de confirmación."""
         result = await controller.delete_document("abc123")
 
-        mock_service.delete.assert_called_once_with("abc123")
+        mock_service["delete"].execute.assert_called_once_with("abc123")
         assert "abc123" in result["message"]
 
     @pytest.mark.asyncio
     async def test_raises_404_when_document_not_found(self, controller, mock_service):
         """Si el service lanza DocumentNotFoundError, el controller lanza 404."""
-        mock_service.delete = AsyncMock(side_effect=DocumentNotFoundError("id_inexistente"))
+        mock_service["delete"].execute = AsyncMock(side_effect=DocumentNotFoundError("id_inexistente"))
 
         with pytest.raises(HTTPException) as exc_info:
             await controller.delete_document("id_inexistente")

@@ -140,6 +140,7 @@ Base URL: `http://localhost:8000/api/v1`
 | `GET` | `/documents/{id}` | Obtiene un documento específico por ID | — | Documento con metadatos y texto |
 | `PUT` | `/documents/{id}` | Actualiza los metadatos de un documento | JSON con campos a modificar | Documento actualizado |
 | `DELETE` | `/documents/{id}` | Elimina un documento del sistema | — | Mensaje de confirmación |
+| `GET` | `/documents/{id}/download` | Descarga el texto extraído como archivo `.txt` usando el nombre original del PDF | — | Archivo `.txt` con el contenido de `extracted_text` |
 
 ### Ejemplo de respuesta — `POST /documents`
 
@@ -153,6 +154,21 @@ Base URL: `http://localhost:8000/api/v1`
   "updated_at": "2024-05-23T10:30:00"
 }
 ```
+
+### Descarga del texto extraído — `GET /documents/{id}/download`
+
+Este endpoint permite descargar el texto extraído de un documento como un archivo de texto plano. El archivo descargado conserva el nombre original del PDF, pero con extensión `.txt`.
+
+Ejemplo de uso con `curl`:
+
+```bash
+curl -v -o output.txt "http://localhost:8000/api/v1/documents/<DOCUMENT_ID>/download"
+```
+
+Respuesta esperada:
+- Código HTTP: `200 OK` — archivo adjunto con `Content-Disposition: attachment; filename="original_name.txt"`
+- Si el documento no existe: `404 Not Found` con cuerpo en formato ProblemDetail (RFC 9457) incluyendo `type`, `title`, `status`, `detail` e `instance`.
+
 
 ---
 

@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: pdf_extract_mongo
+    env_file:
+      - .env
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - pdf_network
+
+volumes:
+  mongo_data:
+
+networks:
+  pdf_network:
+    external: true

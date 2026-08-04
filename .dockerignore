@@ -1,4 +1,15 @@
-cat > .dockerignore << 'EOF'
+.git
+.venv
+__pycache__
+*.pyc
+tests/
+*.egg-info
+.env
+.pytest_cache
+README.md
+dist/
+build/
+*.eggcat > .dockerignore << 'EOF'
 __pycache__/
 *.pyc
 *.pyo

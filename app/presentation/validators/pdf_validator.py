@@ -68,8 +68,8 @@ async def validate_pdf(file: UploadFile) -> None:
     # — Paso 3: rebobinar para el siguiente lector —
     await file.seek(0)
 
-    if total_size > settings.MAX_PDF_SIZE_BYTES:
+    if total_size > settings.max_pdf_size_bytes:
         raise InvalidFileError(
-            f"El archivo supera el tamaño máximo de {settings.MAX_PDF_SIZE_MB} MB.",
+            f"El archivo supera el tamaño máximo de {settings.max_pdf_size_mb} MB.",
             status_code=413,
         )

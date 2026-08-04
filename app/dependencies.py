@@ -15,13 +15,22 @@ en los endpoints.
 
 
 from app.presentation.controllers.document_controller import DocumentController
-from app.business.services.document_service import DocumentService
 from app.data.repositories.mongo_document_repository import MongoDocumentRepository
-
-
-def get_document_service() -> DocumentService:
-    return DocumentService(repository=MongoDocumentRepository())
+from app.use_cases.process_pdf import ProcessPDFUseCase
+from app.use_cases.list_documents import ListDocumentsUseCase
+from app.use_cases.get_document import GetDocumentUseCase
+from app.use_cases.update_document import UpdateDocumentUseCase
+from app.use_cases.delete_document import DeleteDocumentUseCase
+from app.use_cases.download_text import DownloadTextUseCase
 
 
 def get_document_controller() -> DocumentController:
-    return DocumentController(service=get_document_service())
+  repo = MongoDocumentRepository()
+  return DocumentController(
+    process_pdf=ProcessPDFUseCase(repo),
+    list_documents=ListDocumentsUseCase(repo),
+    get_document=GetDocumentUseCase(repo),
+    update_document=UpdateDocumentUseCase(repo),
+    delete_document=DeleteDocumentUseCase(repo),
+    download_text=DownloadTextUseCase(repo),
+  )

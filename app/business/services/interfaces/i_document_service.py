@@ -56,6 +56,18 @@ class IDocumentService(ABC):
         ...
 
     @abstractmethod
+    async def get_text(self, document_id: str) -> Document:
+        """Obtiene un documento por su ID para operaciones de descarga.
+
+        Retorna la entidad `Document` completa para permitir acceder a
+        `filename` y `extracted_text`.
+
+        Raises:
+            DocumentNotFoundError: Si no existe el documento.
+        """
+        ...
+
+    @abstractmethod
     async def update(self, document_id: str, fields: dict) -> Document:
         """Actualiza metadatos de un documento existente.
 

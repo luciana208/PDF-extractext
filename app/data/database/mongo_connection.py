@@ -19,7 +19,7 @@ import logging
 import motor.motor_asyncio
 from pymongo.errors import ConnectionFailure, ConfigurationError
  
-from app.config.settings import settings # Lee MONGO_URL, DB_NAME desde .env
+from app.config.settings import settings # lee mongo_url, db_name desde .env
  
 # Logger propio del módulo (KISS: no configuramos nada extra aquí)
 logger = logging.getLogger(__name__)
@@ -43,13 +43,13 @@ async def connect() -> None:
  
     try:
         _client = motor.motor_asyncio.AsyncIOMotorClient(
-            settings.MONGO_URL,
+            settings.mongo_url,
             serverSelectionTimeoutMS=5000,  # Falla rápido si no hay servidor
         )
         # Forzar handshake para detectar errores de conexión al arrancar
         await _client.server_info()
-        _database = _client[settings.DB_NAME]
-        logger.info("Conexión a MongoDB establecida: %s / %s", settings.MONGO_URL, settings.DB_NAME)
+        _database = _client[settings.db_name]
+        logger.info("Conexión a MongoDB establecida: %s / %s", settings.mongo_url, settings.db_name)
  
     except (ConnectionFailure, ConfigurationError) as exc:
         # Re-lanzamos para que FastAPI no arranque con la DB rota

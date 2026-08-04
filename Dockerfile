@@ -9,12 +9,15 @@ RUN apt-get update && apt-get install -y \
     libtesseract-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar la configuración del proyecto y el código fuente antes de instalar
-COPY pyproject.toml .
-COPY app/ ./app/
+# Copiar los archivos de definición de dependencias primero para aprovechar cache
+# y asegurar reproducibilidad con uv.lock si está presente.
+COPY pyproject.toml uv.lock* ./
 
-# Instalar solo dependencias de producción
-RUN uv pip install --system -e .
+# Instalar dependencias usando `uv sync --frozen` para fijar versiones transitivas
+RUN if [ -f uv.lock ]; then uv sync --frozen; else uv sync; fi
+
+# Copiar el código de la aplicación después de instalar dependencias
+COPY app/ ./app/
 
 # Crear usuario no-root y asegurar permisos sobre el directorio de trabajo
 RUN groupadd --system appuser \
@@ -22,12 +25,6 @@ RUN groupadd --system appuser \
     && chown -R appuser:appuser /app
 
 USER appuser
-
-ENV MONGO_URL=mongodb://mongo:27017
-ENV DB_NAME=pdf_extraction_db
-ENV MAX_PDF_SIZE_MB=10
-ENV DEFAULT_PAGE_SIZE=20
-ENV MAX_PAGE_SIZE=100
 
 EXPOSE 8000
 
