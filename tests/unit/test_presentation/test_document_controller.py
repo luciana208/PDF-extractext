@@ -55,7 +55,7 @@ def sample_response() -> DocumentResponseDTO:
 
 @pytest.fixture
 def mock_service(sample_entity) -> MagicMock:
-    """Mock del IDocumentService con todos los métodos configurados."""
+    """Mock del servicio de documentos con todos los métodos configurados."""
     # Create individual use case mocks
     process = MagicMock()
     process.execute = AsyncMock(return_value=sample_entity)

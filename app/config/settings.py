@@ -5,11 +5,11 @@ from pydantic import Field
 class Settings(BaseSettings):
     app_name: str = "PDF Extractext"
     debug: bool = False
-    mongo_url: str = Field("mongodb://localhost:27017", env="MONGO_URL")
-    db_name: str = Field("pdf_extraction_db", env="DB_NAME")
-    max_pdf_size_mb: int = Field(10, env="MAX_PDF_SIZE_MB")
-    default_page_size: int = Field(20, env="DEFAULT_PAGE_SIZE")
-    max_page_size: int = Field(100, env="MAX_PAGE_SIZE")
+    mongo_url: str = Field("mongodb://localhost:27017")
+    db_name: str = Field("pdf_extraction_db")
+    max_pdf_size_mb: int = Field(10)
+    default_page_size: int = Field(20)
+    max_page_size: int = Field(100)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
